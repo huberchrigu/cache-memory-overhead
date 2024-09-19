@@ -16,6 +16,11 @@ class CacheMemoryOverheadTest {
     }
 
     @Test
+    fun `demonstrate flux to iterator usage()`() {
+        runTest({ Flux.range(0, ITEMS).toIterable().iterator() }, { if (it.hasNext()) it.next() else null }) { it }
+    }
+
+    @Test
     fun `demonstrate no memory issue with list()`() {
         runTest({ (0 until ITEMS).toList() }, { it.firstOrNull() }, { it.drop(1) })
     }
@@ -25,6 +30,12 @@ class CacheMemoryOverheadTest {
     fun `demonstrate better performance with list()`() {
         var i = 0
         runTest({ (0 until ITEMS).toList() }, { if (i >= it.size) null else it[i] }, { i++; it })
+    }
+
+
+    @Test
+    fun `demonstrate better performance with iterator()`() {
+        runTest({ (0 until ITEMS).asSequence().iterator() }, { if (it.hasNext()) it.next() else null }, { it })
     }
 
     private fun <T> runTest(init: () -> T, getNext: (T) -> Int?, update: (T) -> T) {
